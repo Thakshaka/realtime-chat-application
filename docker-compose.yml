@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  chatapp:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chatapp
+    container_name: chatapp-backend
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -14,7 +14,20 @@ services:
     networks:
       - chatapp-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://backend:8080
+    container_name: chatapp-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - chatapp-network
+
 networks:
   chatapp-network:
     driver: bridge
-
