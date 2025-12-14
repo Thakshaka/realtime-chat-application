@@ -11,6 +11,31 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: chatapp_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,9 +52,29 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: chatapp_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_USER: ''
+          REDIS_PASSWORD: ''
 
       - name: Run tests
         run: ./mvnw test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: chatapp_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_USER: ''
+          REDIS_PASSWORD: ''
 
       - name: Verify JAR exists
         run: |

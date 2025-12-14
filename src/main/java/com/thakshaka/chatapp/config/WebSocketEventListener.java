@@ -1,7 +1,6 @@
 package com.thakshaka.chatapp.config;
 
-import com.thakshaka.chatapp.chat.ChatMessage;
-import com.thakshaka.chatapp.chat.MessageType;
+import com.thakshaka.chatapp.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -16,6 +15,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 public class WebSocketEventListener {
 
     private final SimpMessageSendingOperations messageTemplate;
+    private final ChatService chatService;
 
     @EventListener
     public void handleWebSocketDisconnectListener(
@@ -25,10 +25,8 @@ public class WebSocketEventListener {
         String username = (String) headerAccessor.getSessionAttributes().get("username");
         if (username != null) {
             log.info("User disconnected: {}", username);
-            var chatMessage = ChatMessage.builder()
-                    .type(MessageType.LEAVE)
-                    .sender(username)
-                    .build();
+            // Handle user leave (save to DB, remove from Redis)
+            var chatMessage = chatService.handleUserLeave(username);
             messageTemplate.convertAndSend("/topic/public", chatMessage);
         }
     }
