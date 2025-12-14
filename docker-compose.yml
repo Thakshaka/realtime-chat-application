@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  chatapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatapp
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    networks:
+      - chatapp-network
+
+networks:
+  chatapp-network:
+    driver: bridge
+
